@@ -17,7 +17,16 @@ Install via ***composer***:
 ## Usage 
 
 Once we have the package installed we need to create a new service provider to inject the middleware 
-into our connector: 
+into our connector. We need to provide some basic configuration to our migrations service in order to 
+properly migrate the incoming old data.
+
+### Configuration parameters
+
+| Parameter       | Type            | Description                           |
+| --------------- | --------------- | ------------------------------------- |
+| logger          | \Connect\Logger | The logger instance of our connector. |
+| migrationFlag   | string          | The name of the Connect parameter that stores the legacy data in json format. |
+| transformations | array           | Assoc array with the connect param id as key and the rule to process the parameter value from the legacy data. |
 
 ```php
 <?php
@@ -46,7 +55,7 @@ class MigrationServiceProvider extends ServiceProvider
             'logger' => $container['logger'],
             'transformations' => [
                 'email' => function ($migrationData, LoggerInterface $logger) {
-                    $logger->info('Processing email parameter.');
+                    $logger->info('Processing teamAdminEmail parameter.');
                     return strtolower($migrationData->teamAdminEmail);
                 },
                 'team_id' => function ($migrationData, LoggerInterface $logger) {
@@ -54,7 +63,7 @@ class MigrationServiceProvider extends ServiceProvider
                     return strtolower($migrationData->teamId);
                 },
                 'team_name' => function ($migrationData, LoggerInterface $logger) {
-                    $logger->info('Processing email parameter.');
+                    $logger->info('Processing teamName parameter.');
                     return ucwords($migrationData->teamName);
                 },
             ]
