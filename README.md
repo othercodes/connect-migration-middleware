@@ -27,9 +27,9 @@ properly migrate the incoming old data.
 | Parameter       | Type                      | Description                           |
 | --------------- | ------------------------- | ------------------------------------- |
 | logger          | `Psr\Log\LoggerInterface` | The logger instance of our connector. |
-| migrationFlag   | `string`                  | The name of the Connect parameter that stores the legacy data in json format. |
-| serialize       | `bool`                    | If true will automatically serialize any non-string value in the migration data on direct assignation flow. |
-| transformations | `array`                   | Assoc array with the connect param id as key and the rule to process the parameter value from the legacy data. |
+| migrationFlag   | `string`                  | The name of the Connect parameter that stores the legacy data in json format. Default value is `migration_info`|
+| serialize       | `bool`                    | If true will automatically serialize any non-string value in the migration data on direct assignation flow. Default value is `false` |
+| transformations | `array`                   | Assoc array with the connect param id as key and the rule to process the parameter value from the legacy data. Default value is an empty array. |
 
 ```php
 <?php
