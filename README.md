@@ -1,6 +1,8 @@
 # Connect Migration Middleware
-Small middleware to ease the service migration from legacy to Connect
 
+[![Build Status](https://travis-ci.com/othercodes/connect-migration-middleware.svg?branch=master)](https://travis-ci.com/othercodes/connect-migration-middleware) [![codecov](https://codecov.io/gh/othercodes/connect-migration-middleware/branch/master/graph/badge.svg)](https://codecov.io/gh/othercodes/connect-migration-middleware)
+
+Small middleware to ease the service migration from legacy to Connect
 
 ## Installation
 
