@@ -16,7 +16,7 @@
   },
   "autoload": {
     "psr-4": {
-      "Connect\\Middleware\\": "src/"
+      "Connect\\Middleware\\Migration\\": "src/"
     }
   },
   "require-dev": {

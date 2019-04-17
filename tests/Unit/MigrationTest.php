@@ -3,7 +3,8 @@
 namespace Test\Unit;
 
 use Closure;
-use Connect\Middleware\Migration;
+use Connect\Middleware\Migration\Exceptions\MigrationParameterFailException;
+use Connect\Middleware\Migration\Handler;
 use Connect\Request;
 use Connect\Skip;
 use Mockery;
@@ -17,7 +18,7 @@ use Test\TestCase;
 class MigrationTest extends TestCase
 {
     /**
-     * @return Migration
+     * @return Handler
      */
     public function testDefaultInstantiation()
     {
@@ -26,11 +27,11 @@ class MigrationTest extends TestCase
         $logger->shouldReceive('error');
         $logger->shouldReceive('debug');
 
-        $m = new Migration([
+        $m = new Handler([
             'logger' => $logger
         ]);
 
-        $this->assertInstanceOf(Migration::class, $m);
+        $this->assertInstanceOf(Handler::class, $m);
         $this->assertInstanceOf(LoggerInterface::class, $m->getLogger());
         $this->assertInternalType('string', $m->getMigrationFlag());
         $this->assertEquals('migration_info', $m->getMigrationFlag());
@@ -42,7 +43,7 @@ class MigrationTest extends TestCase
     }
 
     /**
-     * @return Migration
+     * @return Handler
      */
     public function testCustomInstantiation()
     {
@@ -51,7 +52,7 @@ class MigrationTest extends TestCase
         $logger->shouldReceive('error');
         $logger->shouldReceive('debug');
 
-        $m = new Migration([
+        $m = new Handler([
             'logger' => $logger,
             'migrationFlag' => 'some_migration_param',
             'transformations' => [
@@ -65,7 +66,7 @@ class MigrationTest extends TestCase
             return ucfirst($migrationData->name);
         });
 
-        $this->assertInstanceOf(Migration::class, $m);
+        $this->assertInstanceOf(Handler::class, $m);
         $this->assertInstanceOf(LoggerInterface::class, $m->getLogger());
         $this->assertInternalType('string', $m->getMigrationFlag());
         $this->assertEquals('some_migration_param', $m->getMigrationFlag());
@@ -80,9 +81,9 @@ class MigrationTest extends TestCase
     /**
      * @depends testDefaultInstantiation
      *
-     * @param Migration $m
+     * @param Handler $m
      */
-    public function testIsMigration(Migration $m)
+    public function testIsMigration(Handler $m)
     {
         $request = new Request($this->getJSON(__DIR__ . '/request.migrate.valid.json'));
         $this->assertTrue($m->isMigration($request));
@@ -94,10 +95,10 @@ class MigrationTest extends TestCase
     /**
      * @depends testDefaultInstantiation
      *
-     * @param Migration $m
+     * @param Handler $m
      * @throws Skip
      */
-    public function testMigrateOnNonMigrableRequest(Migration $m)
+    public function testMigrateOnNonMigrableRequest(Handler $m)
     {
         $request = new Request($this->getJSON(__DIR__ . '/request.valid.json'));
         $migrated = $m->migrate($request);
@@ -108,12 +109,12 @@ class MigrationTest extends TestCase
     /**
      * @depends testDefaultInstantiation
      * @expectedException \Connect\Skip
-     * @expectedExceptionMessage Error fail parsing migration parameter.
+     * @expectedExceptionMessage Migration failed.
      *
-     * @param Migration $m
+     * @param Handler $m
      * @throws \Connect\Skip
      */
-    public function testMigrateWithInvalidMigrationData(Migration $m)
+    public function testMigrateWithInvalidMigrationData(Handler $m)
     {
         $request = new Request($this->getJSON(__DIR__ . '/request.migrate.invalid.json'));
         $migrated = $m->migrate($request);
@@ -124,12 +125,12 @@ class MigrationTest extends TestCase
     /**
      * @depends testDefaultInstantiation
      * @expectedException \Connect\Skip
-     * @expectedExceptionMessage Error fail parsing migration parameter.
+     * @expectedExceptionMessage Migration failed.
      *
-     * @param Migration $m
+     * @param Handler $m
      * @throws Skip
      */
-    public function testMigrateDirectMapWithParameterNotSerializedFail(Migration $m)
+    public function testMigrateDirectMapWithParameterNotSerializedFail(Handler $m)
     {
         $request = new Request($this->getJSON(__DIR__ . '/request.migrate.direct.notserialized.json'));
         $migrated = $m->migrate($request);
@@ -140,10 +141,10 @@ class MigrationTest extends TestCase
     /**
      * @depends testDefaultInstantiation
      *
-     * @param Migration $m
+     * @param Handler $m
      * @throws Skip
      */
-    public function testMigrateDirectMapWithParameterNotSerializedSuccess(Migration $m)
+    public function testMigrateDirectMapWithParameterNotSerializedSuccess(Handler $m)
     {
         $this->assertFalse($m->getSerialize());
         $m->setSerialize(true);
@@ -174,15 +175,15 @@ class MigrationTest extends TestCase
     /**
      * @depends testDefaultInstantiation
      * @expectedException \Connect\Skip
-     * @expectedExceptionMessage Error fail parsing migration parameter.
+     * @expectedExceptionMessage Migration failed.
      *
-     * @param Migration $m
+     * @param Handler $m
      * @throws Skip
      */
-    public function testMigrateTransformationMapManualFail(Migration $m)
+    public function testMigrateTransformationMapManualFail(Handler $m)
     {
         $m->setTransformation('team_id', function ($migrationData, LoggerInterface $logger) {
-            throw new Migration\Exceptions\MigrationParameterFailException('Manual fail');
+            throw new MigrationParameterFailException('Manual fail');
         });
 
         $this->assertInstanceOf(Closure::class, $m->getTransformation('team_id'));
@@ -194,10 +195,10 @@ class MigrationTest extends TestCase
     /**
      * @depends testDefaultInstantiation
      *
-     * @param Migration $m
+     * @param Handler $m
      * @throws Skip
      */
-    public function testMigrateDirectMapSuccess(Migration $m)
+    public function testMigrateDirectMapSuccess(Handler $m)
     {
         $this->assertTrue($m->unsetTransformation('team_id'));
         $this->assertNull($m->getTransformation('team_id'));
@@ -231,10 +232,10 @@ class MigrationTest extends TestCase
     /**
      * @depends testDefaultInstantiation
      *
-     * @param Migration $m
+     * @param Handler $m
      * @throws Skip
      */
-    public function testMigrateTransformationMapSuccess(Migration $m)
+    public function testMigrateTransformationMapSuccess(Handler $m)
     {
         $m->setTransformations([
             'email' => function ($migrationData, LoggerInterface $logger) {

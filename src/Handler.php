@@ -1,6 +1,6 @@
 <?php
 
-namespace Connect\Middleware;
+namespace Connect\Middleware\Migration;
 
 use Closure;
 use Connect\Middleware\Migration\Exceptions\MigrationAbortException;
@@ -15,7 +15,7 @@ use Psr\Log\LoggerInterface;
  * Class Migration
  * @package Connect\Middleware\Migration
  */
-class Migration extends Model
+class Handler extends Model
 {
     /**
      * Defines the migration param that triggers a migration.
@@ -276,8 +276,8 @@ class Migration extends Model
 
         } catch (MigrationAbortException $e) {
 
-            $this->logger->error("[MIGRATION::{$request->id}] Fail parsing parameter due #{$e->getCode()}: {$e->getMessage()}.");
-            throw new Skip("Error, fail parsing migration parameter.");
+            $this->logger->error("[MIGRATION::{$request->id}] {$e->getCode()}: {$e->getMessage()}.");
+            throw new Skip("Migration failed.");
         }
 
         return $new;

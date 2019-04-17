@@ -36,7 +36,7 @@ properly migrate the incoming old data.
 
 namespace App\Providers;
 
-use Connect\Middleware\Migration;
+use Connect\Middleware\Migration\Handler;
 use Connect\Runtime\ServiceProvider;
 use Pimple\Container;
 use Psr\Log\LoggerInterface;
@@ -50,11 +50,11 @@ class MigrationServiceProvider extends ServiceProvider
     /**
      * Create a Migrate middleware
      * @param Container $container
-     * @return Migration
+     * @return Handler
      */
     public function register(Container $container)
     {
-        return new Migration([
+        return new Handler([
             'logger' => $container['logger'],
             'transformations' => [
                 'email' => function ($migrationData, LoggerInterface $logger) {
@@ -96,14 +96,14 @@ the FulfillmentAutomation class:
 namespace App;
 
 use Connect\Logger;
-use Connect\Middleware\Migration;
+use Connect\Middleware\Migration\Handler;
 use Connect\FulfillmentAutomation;
 
 /**
  * Class ProductFulfillment
  * @package App
  * @property Logger $logger
- * @property Migration $migration
+ * @property Handler $migration
  */
 class ProductFulfillment extends FulfillmentAutomation
  {
