@@ -193,7 +193,7 @@ class Migration extends Model
 
             $rawMigrationData = $request->asset->getParameterByID($this->migrationFlag)->value;
 
-            $this->logger->debug("[MIGRATION::{$request->id}] Migration data {$this->migrationFlag} {$rawMigrationData}");
+            $this->logger->debug("[MIGRATION::{$request->id}] Migration data {$this->migrationFlag} {$rawMigrationData}.");
 
             $migrationData = json_decode($rawMigrationData);
 
@@ -253,7 +253,7 @@ class Migration extends Model
 
                 } catch (MigrationParameterFailException $e) {
 
-                    $this->logger->error("[MIGRATION::{$request->id}] #{$e->getCode()}: {$e->getMessage()}");
+                    $this->logger->error("[MIGRATION::{$request->id}] #{$e->getCode()}: {$e->getMessage()}.");
                     $report['failed'][] = $param->id;
                 }
 
@@ -276,8 +276,8 @@ class Migration extends Model
 
         } catch (MigrationAbortException $e) {
 
-            $this->logger->error("[MIGRATION::{$request->id}] Fail parsing parameter due #{$e->getCode()}: {$e->getMessage()}");
-            throw new Skip("Error fail parsing migration parameter.");
+            $this->logger->error("[MIGRATION::{$request->id}] Fail parsing parameter due #{$e->getCode()}: {$e->getMessage()}.");
+            throw new Skip("Error, fail parsing migration parameter.");
         }
 
         return $new;
