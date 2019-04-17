@@ -1,4 +1,4 @@
-# connect-migration-middleware
+# Connect Migration Middleware
 Small middleware to ease the service migration from legacy to Connect
 
 
@@ -128,4 +128,6 @@ class ProductFulfillment extends FulfillmentAutomation
     }
 }
 ```
+
+### Exceptions
 

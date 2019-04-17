@@ -129,12 +129,46 @@ class MigrationTest extends TestCase
      * @param Migration $m
      * @throws Skip
      */
-    public function testMigrateDirectMapWithParameterNotSerialized(Migration $m)
+    public function testMigrateDirectMapWithParameterNotSerializedFail(Migration $m)
     {
         $request = new Request($this->getJSON(__DIR__ . '/request.migrate.direct.notserialized.json'));
         $migrated = $m->migrate($request);
         $this->assertInstanceOf(Request::class, $migrated);
         $this->assertEquals(spl_object_hash($request), spl_object_hash($migrated));
+    }
+
+    /**
+     * @depends testDefaultInstantiation
+     *
+     * @param Migration $m
+     * @throws Skip
+     */
+    public function testMigrateDirectMapWithParameterNotSerializedSuccess(Migration $m)
+    {
+        $this->assertFalse($m->getSerialize());
+        $m->setSerialize(true);
+
+        $this->assertTrue($m->getSerialize());
+
+        $request = new Request($this->getJSON(__DIR__ . '/request.migrate.direct.notserialized.json'));
+        $migrated = $m->migrate($request);
+        $this->assertInstanceOf(Request::class, $migrated);
+        $this->assertNotEquals(spl_object_hash($request), spl_object_hash($migrated));
+
+        $this->assertEquals(
+            '["Some name"]',
+            $migrated->asset->getParameterByID('team_name')->value
+        );
+
+        $migratedTeamName = json_decode($migrated->asset->getParameterByID('team_name')->value);
+
+        $this->assertInternalType('array', $migratedTeamName);
+        $this->assertCount(1, $migratedTeamName);
+        $this->assertEquals('Some name', $migratedTeamName[0]);
+
+
+        $m->setSerialize(false);
+        $this->assertFalse($m->getSerialize());
     }
 
     /**
@@ -213,7 +247,7 @@ class MigrationTest extends TestCase
                 return strtoupper($migrationData->teamName);
             },
             'num_licensed_users' => function ($migrationData, LoggerInterface $logger) {
-                return $migrationData->licNumber * 10;
+                return (int)$migrationData->licNumber * 10;
             }
         ]);
 

@@ -164,7 +164,7 @@
         "title": "Data for migration subscription",
         "description": "Json with data realted with the ralted fulfillment.",
         "scope": null,
-        "value": "{\"teamAdminEmail\":\"example.migration@mailinator.com\",\"teamId\":\"dbtid:AADaQq_w53nMDQbIPM_X123456PuzpcM2BI\",\"resellerId\":[\"3ONEYO1234\"],\"teamName\":\"Migration Team\",\"licNumber\":10}",
+        "value": "{\"teamAdminEmail\":\"example.migration@mailinator.com\",\"teamId\":\"dbtid:AADaQq_w53nMDQbIPM_X123456PuzpcM2BI\",\"resellerId\":[\"3ONEYO1234\"],\"teamName\":\"Migration Team\",\"licNumber\":\"10\"}",
         "value_error": "None",
         "type": "text",
         "constraints": null,

@@ -30,6 +30,13 @@ class Migration extends Model
     private $logger;
 
     /**
+     * If true will automatically serialize any non-string value
+     * in the migration data on direct assignation flow.
+     * @var bool
+     */
+    private $serialize = false;
+
+    /**
      * Array of Parameters transformations.
      * @var callable[]
      */
@@ -128,6 +135,24 @@ class Migration extends Model
         return !isset($this->transformations[$parameterId]);
     }
 
+    /**
+     * Set the serialize value
+     * @param $serialize
+     */
+    public function setSerialize($serialize)
+    {
+        $this->serialize = $serialize;
+    }
+
+    /**
+     * Return the serialize value
+     * @return bool
+     */
+    public function getSerialize()
+    {
+        return $this->serialize;
+    }
+
     /***************************************************
      *              Migration Operations
      ***************************************************/
@@ -208,12 +233,15 @@ class Migration extends Model
                          * used as parameter value, if not, no changes will be done.
                          */
                         if (is_object($migrationData) && isset($migrationData->{$param->id})) {
-
-                            if (!is_scalar($migrationData->{$param->id})) {
-                                $paramType = gettype($migrationData->{$param->id});
-                                throw new MigrationParameterFailException(
-                                    "Invalid parameter {$param->id} type, must be string, given {$paramType}."
-                                );
+                            if (!is_string($migrationData->{$param->id})) {
+                                if ($this->serialize) {
+                                    $migrationData->{$param->id} = json_encode($migrationData->{$param->id});
+                                } else {
+                                    $paramType = gettype($migrationData->{$param->id});
+                                    throw new MigrationParameterFailException(
+                                        "Invalid parameter {$param->id} type, must be string, given {$paramType}."
+                                    );
+                                }
                             }
 
                             $new->asset->getParameterByID($param->id)->value($migrationData->{$param->id});
