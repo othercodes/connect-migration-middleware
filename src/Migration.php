@@ -219,9 +219,11 @@ class Migration extends Model
                     if (array_key_exists($param->id, $this->transformations)) {
 
                         $this->logger->info("[MIGRATION::{$request->id}] Running transformation for parameter{$param->id}.");
-
                         $new->asset->getParameterByID($param->id)->value(
-                            $this->transformations[$param->id]($migrationData, $this->logger)
+                            call_user_func_array($this->transformations[$param->id], [
+                                'data' => $migrationData,
+                                'logger' => $this->logger
+                            ])
                         );
 
                     } else {
