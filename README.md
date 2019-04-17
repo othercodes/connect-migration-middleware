@@ -24,11 +24,12 @@ properly migrate the incoming old data.
 
 ### Configuration parameters
 
-| Parameter       | Type            | Description                           |
-| --------------- | --------------- | ------------------------------------- |
-| logger          | \Connect\Logger | The logger instance of our connector. |
-| migrationFlag   | string          | The name of the Connect parameter that stores the legacy data in json format. |
-| transformations | array           | Assoc array with the connect param id as key and the rule to process the parameter value from the legacy data. |
+| Parameter       | Type                      | Description                           |
+| --------------- | ------------------------- | ------------------------------------- |
+| logger          | `Psr\Log\LoggerInterface` | The logger instance of our connector. |
+| migrationFlag   | `string`                  | The name of the Connect parameter that stores the legacy data in json format. |
+| serialize       | `bool`                    | If true will automatically serialize any non-string value in the migration data on direct assignation flow. |
+| transformations | `array`                   | Assoc array with the connect param id as key and the rule to process the parameter value from the legacy data. |
 
 ```php
 <?php
@@ -132,4 +133,13 @@ class ProductFulfillment extends FulfillmentAutomation
 ```
 
 ### Exceptions
+
+The connect migration middleware uses two different exceptions:
+
+| Exception | Description | 
+| --------- | ------------------------------ | 
+| `MigrationParameterFailException` | Can be thrown if any parameter fails on validation and/or transformation, an error will be logged for that parameter, the migration will fail, the fulfillment will be skipped. | 
+| `MigrationAbortException` | The migration will directly fail, the fulfillment will be skipped. | 
+
+
 
