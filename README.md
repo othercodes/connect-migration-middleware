@@ -1,6 +1,6 @@
 # Connect Migration Middleware
 
-[![Build Status](https://travis-ci.com/othercodes/connect-migration-middleware.svg?branch=master)](https://travis-ci.com/othercodes/connect-migration-middleware) [![codecov](https://codecov.io/gh/othercodes/connect-migration-middleware/branch/master/graph/badge.svg)](https://codecov.io/gh/othercodes/connect-migration-middleware)
+[![Build Status](https://travis-ci.com/ingrammicro/connect-migration-middleware.svg?branch=master)](https://travis-ci.com/ingrammicro/connect-migration-middleware) [![codecov](https://codecov.io/gh/ingrammicro/connect-migration-middleware/branch/master/graph/badge.svg)](https://codecov.io/gh/ingrammicro/connect-migration-middleware)
 
 Small middleware to ease the service migration from legacy to Connect
 
@@ -36,10 +36,11 @@ properly migrate the incoming old data.
 
 namespace App\Providers;
 
-use Connect\Middleware\Migration\Handler;
+use Connect\Middleware\Migration\Handler as MigrationHandler;
 use Connect\Runtime\ServiceProvider;
 use Pimple\Container;
 use Psr\Log\LoggerInterface;
+use Connect\Middleware\Migration\Exceptions\MigrationParameterFailException;
 
 /**
  * Class MigrationServiceProvider
@@ -50,23 +51,42 @@ class MigrationServiceProvider extends ServiceProvider
     /**
      * Create a Migrate middleware
      * @param Container $container
-     * @return Handler
+     * @return MigrationHandler
      */
     public function register(Container $container)
     {
-        return new Handler([
+        return new MigrationHandler([
             'logger' => $container['logger'],
             'transformations' => [
-                'email' => function ($migrationData, LoggerInterface $logger) {
-                    $logger->info('Processing teamAdminEmail parameter.');
+                'email' => function ($migrationData, LoggerInterface $logger, $rid) {
+                    $logger->info("[MIGRATION::{$rid}] Processing teamAdminEmail parameter.");
+                    
+                    if(empty($migrationData->teamAdminEmail)) {
+                        throw new MigrationParameterFailException("Missing field teamAdminEmail.", 400);
+                    }
+                    
+                    if(!filter_var($migrationData->teamAdminEmail, FILTER_VALIDATE_EMAIL)) {
+                        throw new MigrationParameterFailException("Wrong field teamAdminEmail must be an email.", 400);
+                    }
+                    
                     return strtolower($migrationData->teamAdminEmail);
                 },
-                'team_id' => function ($migrationData, LoggerInterface $logger) {
-                    $logger->info('Processing email parameter.');
+                'team_id' => function ($migrationData, LoggerInterface $logger, $rid) {
+                    $logger->info("[MIGRATION::{$rid}] Processing teamId parameter.");
+                    
+                    if(empty($migrationData->teamId)) {
+                        throw new MigrationParameterFailException("Missing field teamId.", 400);
+                    }
+                    
                     return strtolower($migrationData->teamId);
                 },
-                'team_name' => function ($migrationData, LoggerInterface $logger) {
-                    $logger->info('Processing teamName parameter.');
+                'team_name' => function ($migrationData, LoggerInterface $logger, $rid) {
+                    $logger->info("[MIGRATION::{$rid}] Processing teamName parameter.");
+                    
+                    if(empty($migrationData->teamName)) {
+                        throw new MigrationParameterFailException("Missing field teamName.", 400);
+                    }
+                    
                     return ucwords($migrationData->teamName);
                 },
             ]
@@ -86,8 +106,8 @@ Next we need to add this service provider to our configuration json:
 
 ```
 
-Finally we only need to call the migration service inside our processRequest() method of 
-the FulfillmentAutomation class:
+Finally we only need to call the migration service inside our `processRequest()` method of 
+the `FulfillmentAutomation` class:
 
 ```php
 
@@ -127,7 +147,7 @@ class ProductFulfillment extends FulfillmentAutomation
     
     public function processTierConfigRequest($tierConfigRequest)
     {
-        // NOT MIGRABLE!
+        // NOT MIGRABLE! (YET)
     }
 }
 ```

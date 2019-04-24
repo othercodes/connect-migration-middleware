@@ -222,7 +222,8 @@ class Handler extends Model
                         $new->asset->getParameterByID($param->id)->value(
                             call_user_func_array($this->transformations[$param->id], [
                                 'data' => $migrationData,
-                                'logger' => $this->logger
+                                'logger' => $this->logger,
+                                'requestId' => $request->id,
                             ])
                         );
 
@@ -262,7 +263,7 @@ class Handler extends Model
 
             if (count($report['failed']) > 0) {
 
-                $failed = implode(',', $report['failed']);
+                $failed = implode(', ', $report['failed']);
                 throw new MigrationAbortException(
                     "Some parameter process has failed ({$failed}), unable to complete the migration."
                 );
@@ -271,7 +272,7 @@ class Handler extends Model
             $success = count($report['success']);
             $processed = count($report['processed']);
 
-            $byName = implode(',', $report['success']);
+            $byName = implode(', ', $report['success']);
             $this->logger->info("[MIGRATION::{$request->id}] Parameters {$success}/{$processed} ({$byName}) processed correctly.");
 
         } catch (MigrationAbortException $e) {

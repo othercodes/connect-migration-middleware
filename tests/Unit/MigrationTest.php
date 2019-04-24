@@ -56,13 +56,13 @@ class MigrationTest extends TestCase
             'logger' => $logger,
             'migrationFlag' => 'some_migration_param',
             'transformations' => [
-                'email' => function ($migrationData, LoggerInterface $logger) {
+                'email' => function ($migrationData, LoggerInterface $logger, $rid) {
                     return strtolower($migrationData->teamAdminEmail);
                 }
             ]
         ]);
 
-        $m->setTransformation('name', function ($migrationData, LoggerInterface $logger) {
+        $m->setTransformation('name', function ($migrationData, LoggerInterface $logger, $rid) {
             return ucfirst($migrationData->name);
         });
 
@@ -182,7 +182,7 @@ class MigrationTest extends TestCase
      */
     public function testMigrateTransformationMapManualFail(Handler $m)
     {
-        $m->setTransformation('team_id', function ($migrationData, LoggerInterface $logger) {
+        $m->setTransformation('team_id', function ($migrationData, LoggerInterface $logger, $rid) {
             throw new MigrationParameterFailException('Manual fail');
         });
 
@@ -238,16 +238,16 @@ class MigrationTest extends TestCase
     public function testMigrateTransformationMapSuccess(Handler $m)
     {
         $m->setTransformations([
-            'email' => function ($migrationData, LoggerInterface $logger) {
+            'email' => function ($migrationData, LoggerInterface $logger, $rid) {
                 return strtoupper($migrationData->teamAdminEmail);
             },
-            'team_id' => function ($migrationData, LoggerInterface $logger) {
+            'team_id' => function ($migrationData, LoggerInterface $logger, $rid) {
                 return strtoupper($migrationData->teamId);
             },
-            'team_name' => function ($migrationData, LoggerInterface $logger) {
+            'team_name' => function ($migrationData, LoggerInterface $logger, $rid) {
                 return strtoupper($migrationData->teamName);
             },
-            'num_licensed_users' => function ($migrationData, LoggerInterface $logger) {
+            'num_licensed_users' => function ($migrationData, LoggerInterface $logger, $rid) {
                 return (int)$migrationData->licNumber * 10;
             }
         ]);
